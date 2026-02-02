@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-ring: hsl(var(--ring));
+  --radius-lg: var(--radius);
+}
+
+:root {
+  /* Lintel light theme */
+  --background: 210 15% 96%;
+  --foreground: 218 35% 18%; /* deep slate */
+
+  --muted: 210 16% 90%;
+  --muted-foreground: 218 20% 35%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 218 35% 18%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 218 35% 18%;
+
+  --border: 215 18% 85%;
+  --input: 215 18% 85%;
+
+  --primary: 214 35% 26%; /* Lintel navy */
+  --primary-foreground: 0 0% 98%;
+
+  --secondary: 210 16% 90%;
+  --secondary-foreground: 218 35% 18%;
+
+  --accent: 45 95% 55%; /* Lintel yellow */
+  --accent-foreground: 220 30% 15%;
+
+  --destructive: 0 72% 50%;
+  --destructive-foreground: 0 0% 98%;
+
+  --ring: 214 35% 26%;
+
+  --radius: 0.75rem;
+}
+
+.dark {
+  /* Lintel dark theme */
+  --background: 218 32% 10%;
+  --foreground: 210 20% 92%;
+
+  --muted: 218 25% 16%;
+  --muted-foreground: 210 15% 70%;
+
+  --popover: 218 32% 10%;
+  --popover-foreground: 210 20% 92%;
+
+  --card: 218 32% 12%;
+  --card-foreground: 210 20% 92%;
+
+  --border: 218 20% 20%;
+  --input: 218 20% 20%;
+
+  --primary: 45 95% 55%; /* flip to yellow for contrast on dark */
+  --primary-foreground: 220 30% 12%;
+
+  --secondary: 218 25% 16%;
+  --secondary-foreground: 210 20% 92%;
+
+  --accent: 45 95% 55%;
+  --accent-foreground: 220 30% 12%;
+
+  --destructive: 0 65% 45%;
+  --destructive-foreground: 0 0% 98%;
+
+  --ring: 45 95% 55%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container-tight {
+  @apply max-w-6xl mx-auto px-6;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
