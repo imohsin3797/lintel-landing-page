@@ -548,44 +548,9 @@ export default function Home() {
               </p>
             </div>
 
-            <div className={`grid gap-8 md:grid-cols-3 ${
+            <div className={`grid gap-8 md:grid-cols-2 max-w-2xl mx-auto ${
               showTeam ? 'animate-[fadeInUp_0.8s_ease-out_0.3s_forwards]' : 'opacity-0'
             }`}>
-              {/* Team Member 1 */}
-              <div className={`flex flex-col overflow-hidden rounded-2xl border shadow-lg backdrop-blur-xl ring-1 transition-transform duration-300 hover:scale-105 ${
-                theme === "light"
-                  ? "border-[hsl(214,35%,26%)]/20 bg-gradient-to-br from-white/90 via-white/80 to-[rgba(245,180,0,0.12)] ring-[hsl(214,35%,26%)]/10"
-                  : "border-slate-600/50 bg-gradient-to-br from-slate-800/90 via-slate-700/80 to-[rgba(245,180,0,0.3)] ring-slate-600/30"
-              }`}>
-                <div className="relative aspect-square w-full overflow-hidden">
-                  <Image
-                    src="/blake-mechels3.JPG"
-                    alt="Blake Mechels"
-                    fill
-                    className="object-cover"
-                    style={{ transform: 'scale(1.15)' , objectPosition: 'center 35%' }}
-                  />
-                  <Link
-                    href="https://www.linkedin.com/in/blake-mechels/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="absolute top-4 right-4 rounded-full border border-white/40 bg-white/30 backdrop-blur-md p-2 shadow-lg ring-1 ring-white/20 transition hover:bg-white/40"
-                  >
-                    <Linkedin className="h-5 w-5 text-[hsl(214,35%,26%)]" />
-                  </Link>
-                </div>
-                <div className="p-6 text-center">
-                  <h3 className={`mb-1 text-xl font-bold ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}>
-                    Blake Mechels
-                  </h3>
-                  <p className={`mb-3 text-sm font-semibold ${theme === "light" ? "text-[hsl(214,35%,26%)]/70" : "text-white/70"}`}>
-                    Co-Founder
-                  </p>
-                  <p className={`text-sm ${theme === "light" ? "text-[hsl(214,35%,26%)]/60" : "text-white/60"}`}>
-                    Founder and business owner managing 350+ client relationships, 40 contractors, and $35,000+ in revenue. Seasoned entrepreneur and business operations leader.
-                  </p>
-                </div>
-              </div>
 
               {/* Team Member 2 */}
               <div className={`flex flex-col overflow-hidden rounded-2xl border shadow-lg backdrop-blur-xl ring-1 transition-transform duration-300 hover:scale-105 ${
