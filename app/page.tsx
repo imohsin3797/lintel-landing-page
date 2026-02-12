@@ -8,9 +8,8 @@ import { Clock, FileX, AlertTriangle, Linkedin, Moon, Sun } from "lucide-react";
 export default function Home() {
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [count, setCount] = useState(0);
-  const [showPlus, setShowPlus] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [headerProgress, setHeaderProgress] = useState(0);
   const [showBoxes, setShowBoxes] = useState(false);
   const [showFeatures, setShowFeatures] = useState(false);
   const [showTeam, setShowTeam] = useState(false);
@@ -18,6 +17,9 @@ export default function Home() {
   const boxesRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
   const teamRef = useRef<HTMLDivElement>(null);
+  const headerTargetRef = useRef(0);
+  const headerProgressRef = useRef(0);
+  const headerAnimFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     // Check if theme is stored in localStorage
@@ -32,23 +34,42 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    let rafId: number;
-    
-    const handleScroll = () => {
-      if (rafId) {
-        cancelAnimationFrame(rafId);
-      }
-      
-      rafId = requestAnimationFrame(() => {
-        setIsScrolled(window.scrollY > 50);
-      });
+    const getEasedScrollProgress = () => {
+      const rawProgress = Math.min(window.scrollY / 220, 1);
+      return rawProgress * rawProgress * (3 - 2 * rawProgress);
     };
 
+    const animateHeader = () => {
+      const current = headerProgressRef.current;
+      const target = headerTargetRef.current;
+      const next = current + (target - current) * 0.2;
+      const settledNext = Math.abs(target - next) < 0.001 ? target : next;
+
+      headerProgressRef.current = settledNext;
+      setHeaderProgress((previous) =>
+        Math.abs(previous - settledNext) < 0.001 ? previous : settledNext
+      );
+
+      if (Math.abs(settledNext - target) >= 0.001) {
+        headerAnimFrameRef.current = requestAnimationFrame(animateHeader);
+      } else {
+        headerAnimFrameRef.current = null;
+      }
+    };
+
+    const handleScroll = () => {
+      headerTargetRef.current = getEasedScrollProgress();
+      if (headerAnimFrameRef.current === null) {
+        headerAnimFrameRef.current = requestAnimationFrame(animateHeader);
+      }
+    };
+
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      if (rafId) {
-        cancelAnimationFrame(rafId);
+      if (headerAnimFrameRef.current !== null) {
+        cancelAnimationFrame(headerAnimFrameRef.current);
       }
     };
   }, []);
@@ -69,7 +90,6 @@ export default function Home() {
               currentCount += increment;
               if (currentCount >= targetCount) {
                 setCount(targetCount);
-                setShowPlus(true);
                 clearInterval(timer);
               } else {
                 setCount(Math.floor(currentCount));
@@ -163,47 +183,50 @@ export default function Home() {
     document.documentElement.classList.toggle("dark", newTheme === "dark");
   };
 
+  const isScrolled = headerProgress > 0.7;
+  const headerTopPx = `${(16 * headerProgress).toFixed(2)}px`;
+  const headerOuterMaxWidth = `calc(${(100 - headerProgress * 100).toFixed(3)}vw + ${(56 * headerProgress).toFixed(3)}rem)`;
+  const headerRadiusPx = `${Math.round(999 * headerProgress)}px`;
+  const headerPaddingY = `${(12 - 4 * headerProgress).toFixed(2)}px`;
+  const headerPaddingX = `${(24 - 8 * headerProgress).toFixed(2)}px`;
+  const headerInnerMaxWidth = `calc(${(headerProgress * 100).toFixed(3)}% + ${((1 - headerProgress) * 72).toFixed(3)}rem)`;
+  const logoSizePx = `${(60 - 15 * headerProgress).toFixed(2)}px`;
+  const navGapPx = `${(32 - 16 * headerProgress).toFixed(2)}px`;
+
   return (
       <div className="min-h-screen bg-background text-foreground">
         {/* Header */}
-        <header className={`fixed left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled ? 'top-4' : 'top-0'
-        }`} style={{ 
-          transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
-        }}>
-          <div className={`transition-all duration-500 ${
-            isScrolled 
-              ? 'mx-auto max-w-4xl' 
-              : 'w-full'
-          }`} style={{ 
-            transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
-          }}>
-            <div className={`backdrop-blur-xl transition-all duration-500 ${
-              isScrolled 
-                ? 'rounded-full bg-gradient-to-br from-white/40 via-white/30 to-[rgba(245,180,0,0.18)] border border-white/30 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.3)] ring-1 ring-white/20' 
-                : 'rounded-none bg-gradient-to-br from-white/35 via-white/30 to-[rgba(245,180,0,0.15)] border-b border-white/20 shadow-sm'
-            }`} style={{ 
-              transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
-            }}>
-              <div className={`flex items-center justify-between transition-all duration-500 ${
-                isScrolled ? 'py-2 px-4' : 'py-3 px-6'
-              }`} style={{ 
-                transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
-              }}>
-                <div className={`mx-auto flex w-full items-center justify-between transition-all duration-500 ${
-                  isScrolled ? 'max-w-none' : 'max-w-6xl'
-                }`} style={{ 
-                  transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
-                }}>
+        <header className="fixed left-0 right-0 z-50" style={{ top: headerTopPx }}>
+          <div
+            className="mx-auto w-full"
+            style={{
+              maxWidth: headerOuterMaxWidth,
+            }}
+          >
+            <div
+              className="border border-white/30 bg-gradient-to-br from-white/40 via-white/30 to-[rgba(245,180,0,0.18)] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.3)] ring-1 ring-white/20 backdrop-blur-xl"
+              style={{ borderRadius: headerRadiusPx }}
+            >
+              <div
+                className="flex items-center justify-between"
+                style={{ 
+                  padding: `${headerPaddingY} ${headerPaddingX}`,
+                }}
+              >
+                <div
+                  className="mx-auto flex w-full items-center justify-between"
+                  style={{ 
+                    maxWidth: headerInnerMaxWidth,
+                  }}
+                >
                   <div className="flex items-center gap-3">
                     <Link href="/" className="cursor-pointer">
-                      <div className="relative transition-all duration-500" style={{
-                        width: isScrolled ? '45px' : '60px',
-                        height: isScrolled ? '45px' : '60px',
-                        transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
+                      <div className="relative" style={{
+                        width: logoSizePx,
+                        height: logoSizePx,
                       }}>
                         <Image 
-                          src={theme === "light" ? "/lintel-logo3.png" : "/lintel-logo-dark.png"}
+                          src="/Lintel_Logo.png"
                           alt="Lintel logo" 
                           fill
                           className="object-contain"
@@ -211,11 +234,7 @@ export default function Home() {
                       </div>
                     </Link>
                   </div>
-                  <nav className={`hidden items-center md:flex transition-all duration-500 ${
-                    isScrolled ? 'gap-4' : 'gap-8'
-                  }`} style={{ 
-                    transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}>
+                  <nav className="hidden items-center md:flex" style={{ gap: navGapPx }}>
                     <Link href="/#problem" className={`text-sm font-medium transition ${theme === "light" ? "text-[hsl(214,35%,26%)] hover:text-[hsl(214,35%,40%)]" : "text-white hover:text-white/80"}`}>
                       Problem
                     </Link>
@@ -235,12 +254,12 @@ export default function Home() {
                       {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
                     </button>
                     <Link
-                      href="https://cal.com/ibrahim-mohsin-mbdw6e"
+                      href="https://trylintel.com"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`rounded-full border-2 px-4 py-2 text-sm font-semibold transition whitespace-nowrap ${theme === "light" ? "border-white text-[hsl(214,35%,26%)] hover:bg-white/10" : "border-[hsl(214,35%,26%)] text-white hover:bg-[hsl(214,35%,26%)]/10"}`}
+                      className={`min-w-[118px] rounded-full border-2 px-4 py-2 text-center text-sm font-semibold transition whitespace-nowrap ${theme === "light" ? "border-white text-[hsl(214,35%,26%)] hover:bg-white/10" : "border-[hsl(214,35%,26%)] text-white hover:bg-[hsl(214,35%,26%)]/10"}`}
                     >
-                      {isScrolled ? 'Demo' : 'Book a Demo'}
+                      {isScrolled ? 'Contact' : 'Get in Touch'}
                     </Link>
                   </div>
                 </div>
@@ -259,29 +278,33 @@ export default function Home() {
               allow="autoplay; muted; loop"
             />
           </div>
+          <div
+            className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-br from-black/65 via-black/45 to-black/55"
+            aria-hidden="true"
+          />
 
           <div className="relative z-10 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 md:py-16 min-h-[700px] sm:min-h-[650px] md:min-h-0 md:h-full">
             <div className="w-full max-w-6xl animate-[fadeInUp_0.8s_ease-out_forwards]">
               <div className={`relative z-10 flex flex-col gap-6 sm:gap-8 rounded-xl sm:rounded-2xl border p-5 sm:p-6 md:p-7 shadow-[0_20px_70px_-35px_rgba(0,0,0,0.4)] backdrop-blur-xl ring-1 lg:flex-row lg:items-center lg:gap-12 ${
                 theme === "light" 
-                  ? "border-[hsl(214,35%,26%)]/20 bg-gradient-to-br from-[hsl(214,35%,26%)]/90 via-[hsl(214,35%,26%)]/85 to-[rgba(245,180,0,0.3)] ring-[hsl(214,35%,26%)]/30" 
-                  : "border-white/30 bg-gradient-to-br from-white/40 via-white/25 to-[rgba(245,180,0,0.18)] ring-white/20"
+                  ? "border-[hsl(214,35%,26%)]/20 bg-gradient-to-br from-[hsl(214,35%,26%)]/95 via-[hsl(214,35%,26%)]/90 to-[rgba(245,180,0,0.32)] ring-[hsl(214,35%,26%)]/30" 
+                  : "border-white/20 bg-gradient-to-br from-[rgba(11,23,45,0.88)] via-[rgba(15,31,60,0.82)] to-[rgba(245,180,0,0.24)] ring-white/15"
               }`}>
                 <div className="flex-1 space-y-4 sm:space-y-6">
                   <div className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold animate-[fadeInUp_0.8s_ease-out_0.2s_forwards] opacity-0 ${
-                    theme === "light" ? "bg-white/20 text-white" : "bg-primary/30 text-white"
+                    theme === "light" ? "bg-white/20 text-white" : "bg-[hsl(45,95%,55%)]/35 text-[hsl(220,30%,15%)]"
                   }`}>
-                    For construction teams & coordinators
+                    AI-powered risk detection for construction documents
                   </div>
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-white animate-[fadeInUp_0.8s_ease-out_0.4s_forwards] opacity-0">
-                    Supercharge construction alignment with AI. Meet Lintel.
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.55)] animate-[fadeInUp_0.8s_ease-out_0.4s_forwards] opacity-0">
+                    Catch risks before they land on-site.
                   </h1>
-                  <p className="text-sm sm:text-base md:text-lg text-white/90 animate-[fadeInUp_0.8s_ease-out_0.6s_forwards] opacity-0">
-                    Lintel continuously analyzes drawings, specs, schedules, and field comms—catching contradictions and checking against local regulations and compliance codes. Surface the highest-risk issues with evidence before costly rework hits the field.
+                  <p className="text-sm sm:text-base md:text-lg text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)] animate-[fadeInUp_0.8s_ease-out_0.6s_forwards] opacity-0">
+                    Lintel&apos;s AI continuously scans your entire project document set, detecting contradictions and compliance risks with citations for instant verification.
                   </p>
                   <div className="flex flex-col sm:flex-row flex-wrap gap-3 animate-[fadeInUp_0.8s_ease-out_0.8s_forwards] opacity-0">
                     <Link
-                      href="https://cal.com/ibrahim-mohsin-mbdw6e"
+                      href="https://trylintel.com"
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`rounded-md px-5 py-3 text-sm font-semibold shadow-lg transition hover:-translate-y-0.5 text-center ${
@@ -290,14 +313,14 @@ export default function Home() {
                           : "bg-primary text-primary-foreground shadow-primary/20 hover:bg-primary/90"
                       }`}
                     >
-                      Book a Demo
+                      Get in Touch
                     </Link>
                     <Link
                       href="#features"
                       className={`rounded-md border px-5 py-3 text-sm font-semibold transition text-center ${
                         theme === "light" 
                           ? "border-white/40 text-white hover:border-white hover:bg-white/10" 
-                          : "border-primary/30 text-primary hover:border-primary hover:bg-primary/10"
+                          : "border-white/50 text-white hover:border-white hover:bg-white/10"
                       }`}
                     >
                       See Features
@@ -322,30 +345,49 @@ export default function Home() {
         <section id="problem" ref={problemRef} className="relative py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-background">
           <div className="mx-auto max-w-6xl">
             <div className="flex flex-col items-center gap-12">
+              <div className={`text-center ${
+                hasAnimated ? 'animate-[fadeInUp_0.8s_ease-out_forwards]' : 'opacity-0'
+              }`}>
+                <h2 className={`mb-4 text-3xl font-bold md:text-5xl ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}>
+                  Construction loses $100B+ annually to poor documentation
+                </h2>
+                <p className={`mx-auto max-w-4xl text-base md:text-lg ${theme === "light" ? "text-[hsl(214,35%,26%)]/75" : "text-white/75"}`}>
+                  We spoke with 50+ construction and engineering professionals about top causes of cost overruns. The same pain points emerged.
+                </p>
+              </div>
+
               {/* Centered Number */}
               <div className={`text-center ${
                 hasAnimated ? 'animate-[fadeInUp_0.8s_ease-out_forwards]' : 'opacity-0'
               }`}>
                 <div className="mb-4 flex items-baseline justify-center">
+                  <span className={`mr-1 text-7xl font-bold md:text-8xl ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}>
+                    ~
+                  </span>
                   <span className={`text-8xl font-bold md:text-9xl ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}>
                     {count}
                   </span>
-                  <span 
-                    className={`text-8xl font-bold md:text-9xl transition-opacity duration-500 ${
-                      showPlus ? 'opacity-100' : 'opacity-0'
-                    } ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}
-                  >
-                    +
-                  </span>
                 </div>
                 <p className={`text-xl font-semibold ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white/90"}`}>
-                  Average RFIs per Construction Project
+                  RFIs per project
                 </p>
+              </div>
+              <div className={`grid w-full max-w-2xl grid-cols-1 gap-6 text-center sm:grid-cols-2 ${
+                hasAnimated ? 'animate-[fadeInUp_0.8s_ease-out_0.1s_forwards]' : 'opacity-0'
+              }`}>
+                <div>
+                  <p className={`text-3xl font-bold ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}>6,400 hrs</p>
+                  <p className={`text-sm ${theme === "light" ? "text-[hsl(214,35%,26%)]/70" : "text-white/70"}`}>spent reviewing documents</p>
+                </div>
+                <div>
+                  <p className={`text-3xl font-bold ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}>$864K</p>
+                  <p className={`text-sm ${theme === "light" ? "text-[hsl(214,35%,26%)]/70" : "text-white/70"}`}>RFI processing cost</p>
+                </div>
               </div>
 
               {/* Three Problem Boxes */}
               <div ref={boxesRef} className="grid w-full gap-6 md:grid-cols-3">
-                {/* Problem 1: Costly Delays */}
+                {/* Problem 1: Scope Gaps */}
                 <div className={`flex flex-col items-center gap-4 rounded-2xl border p-6 shadow-[0_10px_40px_-20px_rgba(0,0,0,0.3)] backdrop-blur-xl ring-1 text-center transition-all duration-300 ease-out hover:scale-110 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-1 cursor-pointer ${
                   theme === "light"
                     ? "border-[hsl(214,35%,26%)]/20 bg-gradient-to-br from-white/80 via-white/70 to-[rgba(245,180,0,0.15)] ring-[hsl(214,35%,26%)]/10 hover:border-[hsl(214,35%,26%)]/40"
@@ -356,15 +398,15 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className={`mb-2 text-xl font-bold ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}>
-                      Costly Delays & Rework
+                      Scope Gaps and Ambiguities
                     </h3>
                     <p className={`text-sm ${theme === "light" ? "text-[hsl(214,35%,26%)]/80" : "text-white/80"}`}>
-                      Issues caught on-site turn into expensive RFIs, causing project delays and budget overruns.
+                      Project scopes are often missing critical details and leave specifics to interpretation, causing contractor conflict and rework.
                     </p>
                   </div>
                 </div>
 
-                {/* Problem 2: Documentation Conflicts */}
+                {/* Problem 2: Plan Conflicts */}
                 <div className={`flex flex-col items-center gap-4 rounded-2xl border p-6 shadow-[0_10px_40px_-20px_rgba(0,0,0,0.3)] backdrop-blur-xl ring-1 text-center transition-all duration-300 ease-out hover:scale-110 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-1 cursor-pointer ${
                   theme === "light"
                     ? "border-[hsl(214,35%,26%)]/20 bg-gradient-to-br from-white/80 via-white/70 to-[rgba(245,180,0,0.15)] ring-[hsl(214,35%,26%)]/10 hover:border-[hsl(214,35%,26%)]/40"
@@ -375,15 +417,15 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className={`mb-2 text-xl font-bold ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}>
-                      Documentation Conflicts
+                      Plan Conflicts
                     </h3>
                     <p className={`text-sm ${theme === "light" ? "text-[hsl(214,35%,26%)]/80" : "text-white/80"}`}>
-                      Drawings don&apos;t match specs, schedules contradict reality, and compliance gaps slip through.
+                      Drawings don&apos;t match specs, and conflicts make their way to the site, causing rework and delays.
                     </p>
                   </div>
                 </div>
 
-                {/* Problem 3: Manual Review Bottlenecks */}
+                {/* Problem 3: Regulatory Risk */}
                 <div className={`flex flex-col items-center gap-4 rounded-2xl border p-6 shadow-[0_10px_40px_-20px_rgba(0,0,0,0.3)] backdrop-blur-xl ring-1 text-center transition-all duration-300 ease-out hover:scale-110 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] hover:-translate-y-1 cursor-pointer ${
                   theme === "light"
                     ? "border-[hsl(214,35%,26%)]/20 bg-gradient-to-br from-white/80 via-white/70 to-[rgba(245,180,0,0.15)] ring-[hsl(214,35%,26%)]/10 hover:border-[hsl(214,35%,26%)]/40"
@@ -394,10 +436,10 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className={`mb-2 text-xl font-bold ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}>
-                      Manual Review Bottlenecks
+                      Regulatory Non-Compliance
                     </h3>
                     <p className={`text-sm ${theme === "light" ? "text-[hsl(214,35%,26%)]/80" : "text-white/80"}`}>
-                      Teams can&apos;t keep up with the volume and complexity of modern projects.
+                      Regulatory issues are caught during inspections that existed since design, causing delays and potential fines.
                     </p>
                   </div>
                 </div>
@@ -417,10 +459,10 @@ export default function Home() {
               showFeatures ? 'animate-[fadeInUp_0.8s_ease-out_forwards]' : 'opacity-0'
             }`}>
               <h2 className={`mb-4 text-4xl font-bold md:text-5xl ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}>
-                See Lintel in Action
+                Built for how construction teams actually work
               </h2>
               <p className={`text-lg ${theme === "light" ? "text-[hsl(214,35%,26%)]/70" : "text-white/70"}`}>
-                Watch how Lintel automates issue detection and streamlines your construction workflow
+                From contradiction detection to RFI-ready packets, Lintel turns document risk into action.
               </p>
             </div>
 
@@ -453,10 +495,10 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Feature 2: Evidence-Based Insights */}
+              {/* Feature 2: Streamlined RFI Process */}
               <div className="flex flex-col gap-6 transition-transform duration-300 hover:scale-105">
                 <h3 className={`text-center text-2xl font-bold ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}>
-                  Evidence-Based Insights
+                  Streamlined RFI Process
                 </h3>
                 <div className={`relative aspect-video w-full overflow-hidden rounded-xl border shadow-lg backdrop-blur-xl ring-1 ${
                   theme === "light"
@@ -475,14 +517,14 @@ export default function Home() {
                   </video>
                 </div>
                 <p className={`text-center text-sm ${theme === "light" ? "text-[hsl(214,35%,26%)]/70" : "text-white/70"}`}>
-                  Every issue comes with pinpointed evidence from source documents, making verification instant
+                  Generate and send RFIs directly from detected issues with all context and evidence attached to Procore in one click
                 </p>
               </div>
 
-              {/* Feature 3: Streamlined RFI Process */}
+              {/* Feature 3: Evidence-Based Insights */}
               <div className="flex flex-col gap-6 transition-transform duration-300 hover:scale-105">
                 <h3 className={`text-center text-2xl font-bold ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}>
-                  Streamlined RFI Process
+                  Evidence-Based Insights
                 </h3>
                 <div className={`relative aspect-video w-full overflow-hidden rounded-xl border shadow-lg backdrop-blur-xl ring-1 ${
                   theme === "light"
@@ -501,7 +543,7 @@ export default function Home() {
                   </video>
                 </div>
                 <p className={`text-center text-sm ${theme === "light" ? "text-[hsl(214,35%,26%)]/70" : "text-white/70"}`}>
-                  Generate and send RFIs directly from detected issues with all context and evidence attached
+                  Every issue comes with precise source-page references, making verification instant and auditable
                 </p>
               </div>
 
@@ -527,7 +569,7 @@ export default function Home() {
                   </video>
                 </div>
                 <p className={`text-center text-sm ${theme === "light" ? "text-[hsl(214,35%,26%)]/70" : "text-white/70"}`}>
-                  Ask Lintel AI relevant questions across your entire construction document set and get instant, accurate answers with citations
+                  Ask Lintel AI questions across your entire construction document set and get instant, accurate answers with citations
                 </p>
               </div>
             </div>
@@ -541,10 +583,10 @@ export default function Home() {
               showTeam ? 'animate-[fadeInUp_0.8s_ease-out_forwards]' : 'opacity-0'
             }`}>
               <h2 className={`mb-4 text-4xl font-bold md:text-5xl ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}>
-                Meet Our Team
+                The right team for this problem
               </h2>
               <p className={`text-lg ${theme === "light" ? "text-[hsl(214,35%,26%)]/70" : "text-white/70"}`}>
-                Civil engineering and AI experts working together to transform the industry
+                5+ years building together across robotics, debate, and research.
               </p>
             </div>
 
@@ -580,10 +622,10 @@ export default function Home() {
                     Ibrahim Mohsin
                   </h3>
                   <p className={`mb-3 text-sm font-semibold ${theme === "light" ? "text-[hsl(214,35%,26%)]/70" : "text-white/70"}`}>
-                    Co-Founder
+                    CEO · UNC Chapel Hill
                   </p>
                   <p className={`text-sm ${theme === "light" ? "text-[hsl(214,35%,26%)]/60" : "text-white/60"}`}>
-                    AI project specialist having built enterprise systems for governments, non-profits, startups, healthtech, and much more. Experienced developer passionate about building tools that increase productivity.
+                    Built SMS-based RAG AI connecting thousands of government resources for elderly caregivers in Western North Carolina. Founded Workly, a gig marketplace reaching 400+ users and $4K+ job volume in three months.
                   </p>
                 </div>
               </div>
@@ -616,14 +658,19 @@ export default function Home() {
                     Jathan Pai
                   </h3>
                   <p className={`mb-3 text-sm font-semibold ${theme === "light" ? "text-[hsl(214,35%,26%)]/70" : "text-white/70"}`}>
-                    Co-Founder
+                    CTO · Claremont McKenna College
                   </p>
                   <p className={`text-sm ${theme === "light" ? "text-[hsl(214,35%,26%)]/60" : "text-white/60"}`}>
-                    Product leader with expertise in managing quality control and compliance on civil engineering projects. Passionate about policy and procedure optimization.
+                    400+ hours reviewing civil engineering documents during internship work. Conducted research at Caltech and Vanderbilt Medical School, and led housing policy research at the Rose Institute.
                   </p>
                 </div>
               </div>
             </div>
+            {/* <p className={`mx-auto mt-10 max-w-4xl text-center text-base md:text-lg ${
+              theme === "light" ? "text-[hsl(214,35%,26%)]/70" : "text-white/70"
+            }`}>
+              Jathan and Ibrahim have collaborated since high school as robotics teammates, debate partners, and research collaborators.
+            </p> */}
           </div>
         </section>
       </main>
@@ -641,7 +688,7 @@ export default function Home() {
               <Link href="/" className="cursor-pointer">
                 <div className="relative h-16 w-16">
                   <Image 
-                    src={theme === "light" ? "/lintel-logo3.png" : "/lintel-logo-dark.png"}
+                    src="/Lintel_Logo.png"
                     alt="Lintel logo" 
                     fill
                     className="object-contain"
@@ -649,7 +696,7 @@ export default function Home() {
                 </div>
               </Link>
               <p className={`text-sm ${theme === "light" ? "text-[hsl(214,35%,26%)]/70" : "text-white/70"}`}>
-                AI-powered continuous linting for construction projects.
+                AI-powered risk detection for construction documents.
               </p>
             </div>
 
@@ -673,10 +720,10 @@ export default function Home() {
             <div className="space-y-4">
               <h3 className={`text-sm font-semibold ${theme === "light" ? "text-[hsl(214,35%,26%)]" : "text-white"}`}>Get Started</h3>
               <p className={`text-sm ${theme === "light" ? "text-[hsl(214,35%,26%)]/70" : "text-white/70"}`}>
-                Ready to transform your construction workflow?
+                Seeking design partners for Q2 2026 pilot deployments.
               </p>
               <Link
-                href="https://cal.com/ibrahim-mohsin-mbdw6e"
+                href="https://trylintel.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`inline-block rounded-md px-4 py-2 text-sm font-semibold shadow-lg transition text-center ${
@@ -685,7 +732,7 @@ export default function Home() {
                     : "bg-primary text-primary-foreground shadow-primary/20 hover:bg-primary/90"
                 }`}
               >
-                Book a Demo
+                Get in Touch
               </Link>
             </div>
           </div>
@@ -716,4 +763,3 @@ export default function Home() {
     </div>
   );
 }
-

@@ -22,7 +22,7 @@ export function LandingHeader({ theme, onThemeChange, isScrolled }: LandingHeade
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src={theme === "dark" ? "/lintel-logo3.png" : "/lintel-logo-dark.png"}
+            src="/Lintel_Logo.png"
             alt="Lintel"
             width={120}
             height={32}
