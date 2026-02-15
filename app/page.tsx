@@ -602,7 +602,7 @@ export default function Home() {
               }`}>
                 <div className="relative aspect-square w-full overflow-hidden">
                   <Image
-                    src="/ibrahim-mohsin.jpg"
+                    src="/ibrahim-mohsin-headshot.JPG"
                     alt="Ibrahim Mohsin"
                     fill
                     className="object-cover scale-125"
