@@ -244,6 +244,9 @@ export default function Home() {
                     <Link href="/#team" className={`text-sm font-medium transition ${theme === "light" ? "text-[hsl(214,35%,26%)] hover:text-[hsl(214,35%,40%)]" : "text-white hover:text-white/80"}`}>
                       Team
                     </Link>
+                    <Link href="https://slides.trylintel.com" target="_blank" rel="noopener noreferrer" className={`text-sm font-medium transition ${theme === "light" ? "text-[hsl(214,35%,26%)] hover:text-[hsl(214,35%,40%)]" : "text-white hover:text-white/80"}`}>
+                      Pitch
+                    </Link>
                   </nav>
                   <div className="flex items-center gap-3">
                     <button
@@ -253,14 +256,6 @@ export default function Home() {
                     >
                       {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
                     </button>
-                    <Link
-                      href="https://trylintel.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`min-w-[118px] rounded-full border-2 px-4 py-2 text-center text-sm font-semibold transition whitespace-nowrap ${theme === "light" ? "border-white text-[hsl(214,35%,26%)] hover:bg-white/10" : "border-[hsl(214,35%,26%)] text-white hover:bg-[hsl(214,35%,26%)]/10"}`}
-                    >
-                      {isScrolled ? 'Contact' : 'Get in Touch'}
-                    </Link>
                   </div>
                 </div>
               </div>
@@ -271,12 +266,15 @@ export default function Home() {
       <main className="pt-16 md:pt-20">
         <section className="relative min-h-[700px] sm:min-h-[650px] md:min-h-0 md:h-[85vh] overflow-hidden">
           <div className="absolute inset-0 z-0 overflow-hidden">
-            <iframe
-              className="absolute top-1/2 left-1/2 h-[200vh] w-[355vh] -translate-x-1/2 -translate-y-1/2 pointer-events-none max-w-none"
-              src="https://www.youtube.com/embed/4BzjUq921Y4?autoplay=1&mute=1&loop=1&playlist=4BzjUq921Y4&controls=0&rel=0&modestbranding=1&playsinline=1&fs=0&showinfo=0&iv_load_policy=3&disablekb=1&enablejsapi=1&vq=hd1080"
-              title="Lintel hero background"
-              allow="autoplay; muted; loop"
-            />
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute top-1/2 left-1/2 h-[200vh] w-[355vh] -translate-x-1/2 -translate-y-1/2 pointer-events-none max-w-none object-cover"
+            >
+              <source src="/hero_section_video.mp4" type="video/mp4" />
+            </video>
           </div>
           <div
             className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-br from-black/65 via-black/45 to-black/55"
@@ -304,12 +302,12 @@ export default function Home() {
                   </p>
                   <div className="flex flex-col sm:flex-row flex-wrap gap-3 animate-[fadeInUp_0.8s_ease-out_0.8s_forwards] opacity-0">
                     <Link
-                      href="https://trylintel.com"
+                      href="https://cal.com/ibrahim-mohsin-mbdw6e"
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`rounded-md px-5 py-3 text-sm font-semibold shadow-lg transition hover:-translate-y-0.5 text-center ${
-                        theme === "light" 
-                          ? "bg-[hsl(45,95%,55%)] text-[hsl(214,35%,26%)] shadow-[hsl(45,95%,55%)]/30 hover:bg-[hsl(45,95%,60%)]" 
+                        theme === "light"
+                          ? "bg-[hsl(45,95%,55%)] text-[hsl(214,35%,26%)] shadow-[hsl(45,95%,55%)]/30 hover:bg-[hsl(45,95%,60%)]"
                           : "bg-primary text-primary-foreground shadow-primary/20 hover:bg-primary/90"
                       }`}
                     >
@@ -713,6 +711,9 @@ export default function Home() {
                 <Link href="#team" className={`text-sm transition ${theme === "light" ? "text-[hsl(214,35%,26%)]/70 hover:text-[hsl(214,35%,26%)]" : "text-white/70 hover:text-white"}`}>
                   Team
                 </Link>
+                <Link href="https://slides.trylintel.com" target="_blank" rel="noopener noreferrer" className={`text-sm transition ${theme === "light" ? "text-[hsl(214,35%,26%)]/70 hover:text-[hsl(214,35%,26%)]" : "text-white/70 hover:text-white"}`}>
+                  Pitch
+                </Link>
               </nav>
             </div>
 
@@ -723,7 +724,7 @@ export default function Home() {
                 Seeking design partners for Q2 2026 pilot deployments.
               </p>
               <Link
-                href="https://trylintel.com"
+                href="https://cal.com/ibrahim-mohsin-mbdw6e"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`inline-block rounded-md px-4 py-2 text-sm font-semibold shadow-lg transition text-center ${
